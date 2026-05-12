@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# Local generated data
+data/vector_store/*
+!data/vector_store/.gitkeep
+data/**/chroma_db/
+outputs/*.tmp
+outputs/*.log
+
+# Model/cache artifacts
+.cache/
+models/
+embeddings/
+*.pkl
+*.joblib
+*.npy
+*.npz
+
+# Agent/Codex/assistant local files
+.codex/
+.cursor/
+.continue/
+.windsurf/
+.aider*
+.agent/
+.agents/
+.skills/
+skills/
+agent_workspace/
+agent_artifacts/
+conversation_history/
+scratchpad/
+*.agent.md
+*.scratch.md
