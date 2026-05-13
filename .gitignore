@@ -60,3 +60,24 @@ conversation_history/
 scratchpad/
 *.agent.md
 *.scratch.md
+
+*.py[cod]
+.pytest_cache/
+
+# Local vector database
+data/vector_store/
+data/**/chroma_db/
+
+# Local outputs/logs
+*.log
+outputs/*.tmp
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
