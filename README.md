@@ -54,23 +54,32 @@ fgv-ibre-semantic-search/
 └── run_pipeline.py
 ```
 
-## Como Rodar Futuramente
+## Pipeline Vetorial
 
-Nesta etapa, o pipeline funcional ainda não foi implementado. O repositório contém apenas a estrutura inicial e as configurações base.
+A etapa atual prepara os dados limpos para indexação vetorial local:
 
-Para validar o setup atual:
+1. `src/chunking.py` lê `data/processed/noticias_limpas.json`.
+2. Cada notícia é dividida em chunks com `RecursiveCharacterTextSplitter`, preservando metadados do artigo.
+3. O campo `document` é criado como texto natural no formato `{titulo}. {texto_do_chunk}`.
+4. `src/embeddings.py` gera embeddings com `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
+5. `src/vector_store.py` recria a coleção `fgv_ibre_news_chunks` no ChromaDB local.
 
-```bash
-python run_pipeline.py
-```
+O JSON completo do chunk não é enviado para embedding. A separação é intencional:
 
-Saída esperada:
+- `id`: identificador único do chunk;
+- `document`: texto puro usado para busca semântica;
+- `embedding`: vetor numérico gerado a partir do `document`;
+- `metadata`: campos estruturados usados para filtros e exibição.
 
-```text
-Projeto fgv-ibre-semantic-search inicializado. As etapas do pipeline ainda serao implementadas.
-```
+Essa decisão evita que chaves JSON, nomes de campos e valores administrativos contaminem o vetor semântico. O ChromaDB armazena os metadados separadamente, incluindo `article_id`, `chunk_id`, `chunk_index`, `titulo`, `data`, `date_int`, `ano`, `mes`, `fonte` e `content_quality`. O campo `date_int` é derivado de `data` no formato `YYYYMMDD`, permitindo filtros futuros por intervalo de datas, além de filtros por fonte e qualidade.
 
-Quando as próximas etapas forem implementadas, o fluxo previsto será:
+O chunking usa `chunk_size=900`, `chunk_overlap=120` e separadores `["\n\n", ". ", "! ", "? ", "; ", ", ", ".", "!", "?", " ", ""]`. Como as notícias limpas atuais são curtas, cada notícia tende a gerar um único chunk, mantendo o contexto completo do artigo.
+
+A coleção é configurada com distância cosseno e índice HNSW quando suportado pela versão instalada do ChromaDB. O banco vetorial persistente fica em `data/vector_store/chroma_db/` e pode ser reconstruído a partir dos dados processados.
+
+## Como Rodar
+
+Instale as dependências e execute o pipeline:
 
 ```bash
 python -m venv .venv
@@ -78,6 +87,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python run_pipeline.py
 ```
+
+Também é possível executar as etapas separadamente:
+
+```bash
+python -m src.chunking
+python -m src.vector_store
+```
+
+Saídas geradas:
+
+- `data/processed/chunks.jsonl`
+- `data/vector_store/chroma_db/`
 
 ## Roadmap Resumido
 
@@ -97,15 +118,19 @@ python run_pipeline.py
 
 ## Status Atual
 
-Setup inicial do projeto.
+Implementada a preparação e indexação vetorial:
 
-Ainda não foram implementados:
+- limpeza textual disponível em `src/cleaning.py`;
+- geração de chunks em `src/chunking.py`;
+- geração de embeddings em `src/embeddings.py`;
+- indexação local em ChromaDB em `src/vector_store.py`.
 
-- pipeline de limpeza;
-- geração de chunks;
-- embeddings;
-- ChromaDB;
-- busca;
+Ainda não foram implementados nesta branch:
+
+- busca semântica para usuário final;
+- busca léxica;
+- busca híbrida;
+- reranking;
 - avaliação;
 - backend;
 - frontend.
