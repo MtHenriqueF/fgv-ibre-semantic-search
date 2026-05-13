@@ -9,6 +9,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 VECTOR_STORE_DIR = DATA_DIR / "vector_store"
+CHROMA_DB_DIR = VECTOR_STORE_DIR / "chroma_db"
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 EVALUATION_DIR = PROJECT_ROOT / "evaluation"
 
@@ -21,3 +22,5 @@ EVALUATION_RESULTS_PATH = OUTPUTS_DIR / "evaluation_results.csv"
 EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 DEFAULT_TOP_K = 5
 CHROMA_COLLECTION_NAME = "fgv_ibre_news_chunks"
+CHUNK_SIZE = 900
+CHUNK_OVERLAP = 120
