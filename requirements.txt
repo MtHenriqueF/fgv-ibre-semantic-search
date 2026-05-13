@@ -3,6 +3,7 @@ pandas
 numpy
 sentence-transformers
 chromadb
+langchain-text-splitters
 rank-bm25
 fastapi
 uvicorn
