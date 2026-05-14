@@ -18,6 +18,9 @@ CLEAN_NEWS_PATH = PROCESSED_DATA_DIR / "noticias_limpas.json"
 CHUNKS_PATH = PROCESSED_DATA_DIR / "chunks.jsonl"
 CLEANING_REPORT_PATH = OUTPUTS_DIR / "cleaning_report.csv"
 EVALUATION_RESULTS_PATH = OUTPUTS_DIR / "evaluation_results.csv"
+SEARCH_EXAMPLES_PATH = OUTPUTS_DIR / "search_examples.json"
+EVALUATION_QUERIES_PATH = EVALUATION_DIR / "queries_obrigatorias.json"
+RELEVANCE_JUDGMENTS_PATH = EVALUATION_DIR / "relevance_judgments.json"
 
 EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 DEFAULT_TOP_K = 5
