@@ -1,0 +1,4 @@
+query,search_type,top_k,precision_at_3,recall_at_5,mrr,ndcg_at_5,retrieved_article_ids
+mudanças na taxa de juros,semantic,5,1.0,1.0,1.0,0.972898,"[1, 11, 10, 6, 7]"
+mercado de trabalho e desemprego,semantic,5,1.0,0.75,1.0,0.965119,"[14, 4, 19, 3, 15]"
+inflação e preços ao consumidor,semantic,5,0.666667,0.375,1.0,0.512367,"[9, 11, 15, 1, 20]"

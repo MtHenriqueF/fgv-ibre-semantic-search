@@ -1,0 +1,158 @@
+[
+  {
+    "query": "mudanças na taxa de juros",
+    "search_type": "semantic",
+    "top_k": 5,
+    "results": [
+      {
+        "rank": 1,
+        "article_id": 1,
+        "titulo": "Copom mantém Selic em 13,75% ao ano pela quarta reunião consecutiva",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-02",
+        "distance": 0.37935,
+        "similarity": 0.62065
+      },
+      {
+        "rank": 2,
+        "article_id": 11,
+        "titulo": "Selic deve recuar a 9% até o fim de 2024, projetam economistas",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-15",
+        "distance": 0.402385,
+        "similarity": 0.597615
+      },
+      {
+        "rank": 3,
+        "article_id": 10,
+        "titulo": "Crédito total no Brasil atinge R$ 5,6 trilhões com desaceleração no crescimento",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-25",
+        "distance": 0.403508,
+        "similarity": 0.596492
+      },
+      {
+        "rank": 4,
+        "article_id": 6,
+        "titulo": "Copom inicia ciclo de corte e reduz Selic para 13,25%",
+        "fonte": "Valor Econômico",
+        "data": "2023-08-02",
+        "distance": 0.42364,
+        "similarity": 0.57636
+      },
+      {
+        "rank": 5,
+        "article_id": 7,
+        "titulo": "Inadimplência das famílias sobe para 6,3% em julho, aponta BC",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-25",
+        "distance": 0.445342,
+        "similarity": 0.554658
+      }
+    ]
+  },
+  {
+    "query": "mercado de trabalho e desemprego",
+    "search_type": "semantic",
+    "top_k": 5,
+    "results": [
+      {
+        "rank": 1,
+        "article_id": 14,
+        "titulo": "Desemprego juvenil no Brasil ainda preocupa apesar de melhora geral",
+        "fonte": "IBGE",
+        "data": "2023-08-30",
+        "distance": 0.34546,
+        "similarity": 0.65454
+      },
+      {
+        "rank": 2,
+        "article_id": 4,
+        "titulo": "Taxa de desemprego cai para 7,9% no segundo trimestre, menor nível desde 2014",
+        "fonte": "IBGE",
+        "data": "2023-08-29",
+        "distance": 0.382041,
+        "similarity": 0.617959
+      },
+      {
+        "rank": 3,
+        "article_id": 19,
+        "titulo": "Setor de serviços cresce 0,6% em junho e supera expectativas",
+        "fonte": "IBGE",
+        "data": "2023-08-11",
+        "distance": 0.540184,
+        "similarity": 0.459816
+      },
+      {
+        "rank": 4,
+        "article_id": 3,
+        "titulo": "PIB do Brasil cresce 1,9% no segundo trimestre de 2023",
+        "fonte": "IBGE",
+        "data": "2023-09-01",
+        "distance": 0.553922,
+        "similarity": 0.446078
+      },
+      {
+        "rank": 5,
+        "article_id": 15,
+        "titulo": "Câmbio: real se fortalece com melhora do ambiente externo e fiscal",
+        "fonte": "Reuters Brasil",
+        "data": "2023-08-28",
+        "distance": 0.558232,
+        "similarity": 0.441768
+      }
+    ]
+  },
+  {
+    "query": "inflação e preços ao consumidor",
+    "search_type": "semantic",
+    "top_k": 5,
+    "results": [
+      {
+        "rank": 1,
+        "article_id": 9,
+        "titulo": "Inflação ao produtor (IPA) desacelera e pressão sobre preços finais diminui",
+        "fonte": "FGV IBRE",
+        "data": "2023-08-10",
+        "distance": 0.372938,
+        "similarity": 0.627062
+      },
+      {
+        "rank": 2,
+        "article_id": 11,
+        "titulo": "Selic deve recuar a 9% até o fim de 2024, projetam economistas",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-15",
+        "distance": 0.418796,
+        "similarity": 0.581204
+      },
+      {
+        "rank": 3,
+        "article_id": 15,
+        "titulo": "Câmbio: real se fortalece com melhora do ambiente externo e fiscal",
+        "fonte": "Reuters Brasil",
+        "data": "2023-08-28",
+        "distance": 0.435888,
+        "similarity": 0.564112
+      },
+      {
+        "rank": 4,
+        "article_id": 1,
+        "titulo": "Copom mantém Selic em 13,75% ao ano pela quarta reunião consecutiva",
+        "fonte": "Banco Central do Brasil",
+        "data": "2023-08-02",
+        "distance": 0.450786,
+        "similarity": 0.549214
+      },
+      {
+        "rank": 5,
+        "article_id": 20,
+        "titulo": "Expectativas para o PIB de 2023 sobem para 2,5% após resultado do segundo trimestre",
+        "fonte": "Valor Econômico",
+        "data": "2023-09-05",
+        "distance": 0.465288,
+        "similarity": 0.534712
+      }
+    ]
+  }
+]
