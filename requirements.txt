@@ -8,5 +8,6 @@ rank-bm25
 fastapi
 uvicorn
 pydantic
+httpx
 scikit-learn
 pytest
