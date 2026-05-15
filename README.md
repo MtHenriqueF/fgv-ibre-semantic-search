@@ -183,6 +183,65 @@ Retorno: `results: []`.
 
 Busca léxica, busca híbrida e reranking não foram implementados nesta branch. O requisito principal do desafio é o motor de busca semântico, então esta etapa prioriza ChromaDB, distância cosseno, filtros por metadados, limiar de similaridade e métricas de ranking. Essas funcionalidades ficam como features opcionais para branches futuras.
 
+## API FastAPI
+
+A camada HTTP está em `backend/` e apenas expõe a lógica já implementada em `src/`. Ela não recalcula embeddings, não duplica a busca vetorial e não reimplementa métricas.
+
+Inicie a API localmente:
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+Se o executável global `uvicorn` estiver ligado a outro Python, use a forma equivalente:
+
+```bash
+python -m uvicorn backend.main:app --reload
+```
+
+Depois acesse:
+
+- documentação interativa: `http://127.0.0.1:8000/docs`
+- health-check: `GET http://127.0.0.1:8000/health`
+
+Endpoints disponíveis:
+
+| Método | Endpoint | Uso |
+| --- | --- | --- |
+| `GET` | `/health` | verificar se a API está no ar |
+| `POST` | `/api/search` | executar busca semântica com filtros |
+| `GET` | `/api/metadata` | obter fontes, intervalo de datas e qualidades disponíveis |
+| `GET` | `/api/documents/{article_id}` | recuperar a notícia limpa completa |
+| `GET` | `/api/evaluation` | obter métricas e resultados das queries obrigatórias |
+| `GET` | `/api/search/examples` | obter exemplos prontos para atalhos do frontend |
+
+Exemplo de request para busca:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "mudanças na taxa de juros",
+    "top_k": 5,
+    "min_similarity": 0.35,
+    "filters": {
+      "fonte": "Banco Central do Brasil",
+      "date_start": "2023-08-01",
+      "date_end": "2023-08-31",
+      "content_quality": "ok"
+    }
+  }'
+```
+
+O endpoint `/api/evaluation` serve o modo de avaliação planejado para o frontend. Ele lê os artefatos já gerados em `outputs/`, combina os resultados com os julgamentos manuais de relevância e devolve:
+
+- médias das métricas;
+- métricas por query obrigatória;
+- resultados recuperados por query;
+- `article_id`, `chunk_id`, `chunk_index`, distância, similaridade e `relevance_grade`.
+
+O frontend estático ainda será implementado em uma branch futura e consumirá esses endpoints via HTTP/JSON.
+
 ## Roadmap Resumido
 
 1. Setup inicial do repositório.
@@ -201,7 +260,7 @@ Busca léxica, busca híbrida e reranking não foram implementados nesta branch.
 
 ## Status Atual
 
-Implementada a preparação, indexação vetorial e busca semântica:
+Implementada a preparação, indexação vetorial, busca semântica e API:
 
 - limpeza textual disponível em `src/cleaning.py`;
 - geração de chunks em `src/chunking.py`;
@@ -211,11 +270,11 @@ Implementada a preparação, indexação vetorial e busca semântica:
 - métricas de ranking em `src/evaluate.py`;
 - avaliação salva em `outputs/evaluation_results.csv`;
 - exemplos de busca salvos em `outputs/search_examples.json`.
+- API FastAPI disponível em `backend/`.
 
 Ainda não foram implementados nesta branch:
 
 - busca léxica;
 - busca híbrida;
 - reranking;
-- backend;
 - frontend.
