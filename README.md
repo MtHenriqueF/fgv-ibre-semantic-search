@@ -16,11 +16,11 @@ Construir uma aplicação local e simples de executar para:
 - indexar os vetores em ChromaDB local;
 - comparar busca semântica, léxica e híbrida;
 - avaliar resultados com métricas de ranking;
-- expor uma API FastAPI e uma interface web estática em etapas futuras.
+- expor uma API FastAPI e uma interface web estática servida pelo próprio backend.
 
-## Arquitetura Planejada
+## Arquitetura
 
-A arquitetura será organizada em camadas simples:
+A arquitetura está organizada em camadas simples:
 
 - `src/`: lógica principal do projeto, incluindo limpeza, chunking, embeddings, busca e avaliação;
 - `backend/`: aplicação FastAPI e services que chamam a lógica de `src/`;
@@ -29,7 +29,7 @@ A arquitetura será organizada em camadas simples:
 - `evaluation/`: queries e julgamentos de relevância;
 - `outputs/`: relatórios e resultados gerados para inspeção.
 
-O banco vetorial planejado é o ChromaDB local. O projeto não terá autenticação, login, billing, SaaS ou dependência de banco remoto.
+O banco vetorial utilizado é o ChromaDB local. O projeto não terá autenticação, login, billing, SaaS ou dependência de banco remoto.
 
 ## Estrutura de Diretórios
 
@@ -201,6 +201,7 @@ python -m uvicorn backend.main:app --reload
 
 Depois acesse:
 
+- interface web: `http://127.0.0.1:8000/`
 - documentação interativa: `http://127.0.0.1:8000/docs`
 - health-check: `GET http://127.0.0.1:8000/health`
 
@@ -233,14 +234,27 @@ curl -X POST http://127.0.0.1:8000/api/search \
   }'
 ```
 
-O endpoint `/api/evaluation` serve o modo de avaliação planejado para o frontend. Ele lê os artefatos já gerados em `outputs/`, combina os resultados com os julgamentos manuais de relevância e devolve:
+O endpoint `/api/evaluation` serve o modo de avaliação consumido pelo frontend. Ele lê os artefatos já gerados em `outputs/`, combina os resultados com os julgamentos manuais de relevância e devolve:
 
 - médias das métricas;
 - métricas por query obrigatória;
 - resultados recuperados por query;
 - `article_id`, `chunk_id`, `chunk_index`, distância, similaridade e `relevance_grade`.
 
-O frontend estático ainda será implementado em uma branch futura e consumirá esses endpoints via HTTP/JSON.
+## Frontend Estático
+
+O frontend estático está em `frontend/` e é servido pelo próprio FastAPI quando `frontend/index.html` está presente. A interface consome os endpoints da API via HTTP/JSON, sem duplicar a lógica de busca implementada em `src/`.
+
+A página principal oferece:
+
+- campo de busca em linguagem natural;
+- filtros por fonte, qualidade do conteúdo, intervalo de datas, `top-k` e similaridade mínima;
+- atalhos para as queries obrigatórias do desafio;
+- cards de resultado com opção de abrir a notícia completa;
+- exibição opcional de detalhes técnicos, como distância e similaridade;
+- abas de avaliação e metodologia, com métricas agregadas e resultados por query.
+
+Durante a inicialização, o JavaScript carrega `/api/metadata` para preencher filtros e `/api/search/examples` para montar os atalhos. As buscas usam `/api/search`, o modal de detalhe usa `/api/documents/{article_id}` e a aba de avaliação usa `/api/evaluation`.
 
 ## Roadmap Resumido
 
@@ -260,21 +274,21 @@ O frontend estático ainda será implementado em uma branch futura e consumirá 
 
 ## Status Atual
 
-Implementada a preparação, indexação vetorial, busca semântica e API:
+Implementada a preparação, indexação vetorial, busca semântica, API e interface web:
 
 - limpeza textual disponível em `src/cleaning.py`;
 - geração de chunks em `src/chunking.py`;
 - geração de embeddings em `src/embeddings.py`;
-- indexação local em ChromaDB em `src/vector_store.py`.
+- indexação local em ChromaDB em `src/vector_store.py`;
 - busca semântica com filtros em `src/search.py`;
 - métricas de ranking em `src/evaluate.py`;
 - avaliação salva em `outputs/evaluation_results.csv`;
-- exemplos de busca salvos em `outputs/search_examples.json`.
-- API FastAPI disponível em `backend/`.
+- exemplos de busca salvos em `outputs/search_examples.json`;
+- API FastAPI disponível em `backend/`;
+- frontend estático disponível em `frontend/` e servido na raiz `/`.
 
 Ainda não foram implementados nesta branch:
 
 - busca léxica;
 - busca híbrida;
-- reranking;
-- frontend.
+- reranking.
