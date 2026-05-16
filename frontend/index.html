@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FGV IBRE Semantic Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar__inner shell">
+            <div class="brand">
+                <img
+                    class="brand__logo"
+                    src="/assets/icon_fgv_ibre.png"
+                    alt="FGV IBRE"
+                >
+                <span class="brand__divider"></span>
+                <div>
+                    <h1>Semantic Search</h1>
+                    <p>Mini motor de busca semântico para notícias econômicas brasileiras.</p>
+                </div>
+            </div>
+            <a class="topbar__docs" href="/docs">API Docs</a>
+        </div>
+    </header>
+
+    <div class="shell app-shell">
+        <nav class="sidebar" aria-label="Seções principais">
+            <button class="nav-item is-active" data-tab-target="search" type="button">
+                <span class="material-symbols-outlined">search</span>
+                Busca
+            </button>
+            <button class="nav-item" data-tab-target="evaluation" type="button">
+                <span class="material-symbols-outlined">analytics</span>
+                Avaliação
+            </button>
+            <button class="nav-item" data-tab-target="methodology" type="button">
+                <span class="material-symbols-outlined">account_tree</span>
+                Metodologia
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <section class="tab-panel is-active" id="search-panel" data-tab-panel="search">
+                <header class="section-header">
+                    <h2>Buscar notícias econômicas</h2>
+                    <p>Digite uma consulta em linguagem natural para encontrar notícias economicamente relacionadas por similaridade semântica.</p>
+                </header>
+
+                <form class="search-box" id="search-form">
+                    <label class="field-label" for="query-input">Consulta</label>
+                    <div class="search-box__row">
+                        <div class="input-with-icon">
+                            <span class="material-symbols-outlined">search</span>
+                            <input id="query-input" name="query" type="search" placeholder="Digite sua consulta econômica..." required>
+                        </div>
+                        <button class="button button--primary" type="submit">Buscar</button>
+                    </div>
+                    <div class="chip-row" id="example-chips" aria-label="Queries de exemplo"></div>
+                </form>
+
+                <div class="search-layout">
+                    <aside class="panel filters-panel">
+                        <div class="panel__heading">
+                            <span class="material-symbols-outlined">tune</span>
+                            <h3>Filtros</h3>
+                        </div>
+
+                        <label class="field-label" for="source-filter">Fonte</label>
+                        <select id="source-filter">
+                            <option value="">Todas as fontes</option>
+                        </select>
+
+                        <label class="field-label" for="quality-filter">Qualidade do conteúdo</label>
+                        <select id="quality-filter">
+                            <option value="">Todas</option>
+                        </select>
+
+                        <div class="field-grid">
+                            <div>
+                                <label class="field-label" for="date-start-filter">Data inicial</label>
+                                <input id="date-start-filter" type="date">
+                            </div>
+                            <div>
+                                <label class="field-label" for="date-end-filter">Data final</label>
+                                <input id="date-end-filter" type="date">
+                            </div>
+                        </div>
+
+                        <label class="field-label" for="top-k-filter">Top-k</label>
+                        <select id="top-k-filter">
+                            <option value="3">3</option>
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                        </select>
+
+                        <label class="field-label field-label--split" for="similarity-filter">
+                            Similaridade mínima
+                            <strong id="similarity-value">0.35</strong>
+                        </label>
+                        <input id="similarity-filter" type="range" min="0" max="1" step="0.01" value="0.35">
+
+                        <label class="checkbox-row">
+                            <input id="technical-toggle" type="checkbox">
+                            <span>Mostrar detalhes técnicos</span>
+                        </label>
+                    </aside>
+
+                    <section class="results-column">
+                        <div class="results-summary">
+                            <strong id="results-count">Nenhuma busca executada</strong>
+                            <span id="results-context"></span>
+                        </div>
+                        <div class="results-list" id="search-results"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="evaluation-panel" data-tab-panel="evaluation">
+                <header class="section-header section-header--actions">
+                    <div>
+                        <h2>Avaliação da busca semântica</h2>
+                        <p>Precision, Recall, MRR e nDCG só são calculadas para queries com julgamentos manuais de relevância.</p>
+                    </div>
+                    <button class="button button--primary" id="load-evaluation-button" type="button">Carregar avaliação</button>
+                </header>
+
+                <div class="metric-grid" id="metrics-summary"></div>
+
+                <section class="panel panel--table">
+                    <div class="panel__heading">
+                        <span class="material-symbols-outlined">table_chart</span>
+                        <h3>Métricas por query</h3>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Query</th>
+                                    <th>Precision@3</th>
+                                    <th>Recall@5</th>
+                                    <th>MRR</th>
+                                    <th>nDCG@5</th>
+                                </tr>
+                            </thead>
+                            <tbody id="evaluation-table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="evaluation-details" id="evaluation-details"></section>
+
+                <section class="legend panel">
+                    <div class="panel__heading">
+                        <span class="material-symbols-outlined">grade</span>
+                        <h3>Relevância manual</h3>
+                    </div>
+                    <div class="legend__items">
+                        <span>0 = irrelevante</span>
+                        <span>1 = parcialmente relevante</span>
+                        <span>2 = relevante</span>
+                        <span>3 = altamente relevante</span>
+                    </div>
+                </section>
+            </section>
+
+            <section class="tab-panel" id="methodology-panel" data-tab-panel="methodology">
+                <header class="section-header">
+                    <h2>Metodologia</h2>
+                    <p>Pipeline principal do projeto, da limpeza textual até a avaliação do ranking.</p>
+                </header>
+
+                <div class="pipeline">
+                    <article class="pipeline-step">
+                        <span>1</span>
+                        <h3>Limpeza textual</h3>
+                        <p>Remoção de HTML, entidades, links, espaços excessivos e metadados embutidos.</p>
+                    </article>
+                    <article class="pipeline-step">
+                        <span>2</span>
+                        <h3>Embeddings</h3>
+                        <p>Transformação dos textos limpos em vetores semânticos com sentence-transformers.</p>
+                    </article>
+                    <article class="pipeline-step">
+                        <span>3</span>
+                        <h3>ChromaDB</h3>
+                        <p>Armazenamento local dos vetores com metadados usados para filtros e exibição.</p>
+                    </article>
+                    <article class="pipeline-step">
+                        <span>4</span>
+                        <h3>Busca semântica</h3>
+                        <p>Comparação da query com os chunks indexados usando distância cosseno.</p>
+                    </article>
+                    <article class="pipeline-step">
+                        <span>5</span>
+                        <h3>Avaliação</h3>
+                        <p>Medição da qualidade do ranking com Precision@3, Recall@5, MRR e nDCG@5.</p>
+                    </article>
+                </div>
+
+                <section class="panel panel--table">
+                    <div class="panel__heading">
+                        <span class="material-symbols-outlined">analytics</span>
+                        <h3>Indicadores</h3>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Indicador</th>
+                                    <th>Uso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Distância cosseno</td>
+                                    <td>Mede a distância vetorial entre query e documento.</td>
+                                </tr>
+                                <tr>
+                                    <td>Similaridade cosseno</td>
+                                    <td>Aproxima a proximidade semântica entre query e documento.</td>
+                                </tr>
+                                <tr>
+                                    <td>Precision@3</td>
+                                    <td>Mede quantos dos 3 primeiros resultados são relevantes.</td>
+                                </tr>
+                                <tr>
+                                    <td>Recall@5</td>
+                                    <td>Mede quantos documentos relevantes aparecem no top 5.</td>
+                                </tr>
+                                <tr>
+                                    <td>MRR</td>
+                                    <td>Mede a posição do primeiro resultado relevante.</td>
+                                </tr>
+                                <tr>
+                                    <td>nDCG@5</td>
+                                    <td>Mede se os resultados mais relevantes aparecem no topo.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <dialog class="article-dialog" id="article-dialog">
+        <div class="article-dialog__header">
+            <div>
+                <h2 id="dialog-title"></h2>
+                <p id="dialog-meta"></p>
+            </div>
+            <button class="icon-button" id="close-dialog-button" type="button" aria-label="Fechar notícia">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="article-dialog__body">
+            <h3>Texto completo</h3>
+            <p id="dialog-content"></p>
+        </div>
+    </dialog>
+
+    <script src="/app.js"></script>
+</body>
+</html>
