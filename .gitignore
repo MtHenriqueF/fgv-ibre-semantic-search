@@ -44,23 +44,6 @@ embeddings/
 *.npy
 *.npz
 
-# Agent/Codex/assistant local files
-.codex/
-.cursor/
-.continue/
-.windsurf/
-.aider*
-.agent/
-.agents/
-.skills/
-skills/
-agent_workspace/
-agent_artifacts/
-conversation_history/
-scratchpad/
-*.agent.md
-*.scratch.md
-
 *.py[cod]
 .pytest_cache/
 
@@ -81,4 +64,3 @@ env/
 .DS_Store
 .vscode/
 .idea/
-AGENTS.md
