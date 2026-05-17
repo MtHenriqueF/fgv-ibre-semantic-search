@@ -12,12 +12,15 @@ __pycache__
 .vscode
 .idea
 
-# não copie o banco vetorial da sua máquina
-# ele será reconstruído no build
-data/vector_store/chroma_db
+# não copie bancos vetoriais locais da sua máquina
+# eles serão reconstruídos no build
+data/vector_store/
 
 # outputs locais serão regenerados no build
 outputs
+
+# caches locais não devem entrar no contexto de build
+.cache
 
 .env
 .env.*
