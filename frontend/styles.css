@@ -343,6 +343,27 @@ input[type="range"] {
     gap: 12px;
 }
 
+.date-feedback {
+    display: grid;
+    gap: 4px;
+}
+
+.helper-text,
+.error-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+.helper-text {
+    color: var(--text-muted);
+}
+
+.error-text {
+    min-height: 18px;
+    color: #b42318;
+}
+
 .checkbox-row {
     display: flex;
     align-items: center;

@@ -13,6 +13,8 @@ const CONTENT_QUALITY_LABELS = {
 
 const state = {
     evaluationLoaded: false,
+    dateMin: "",
+    dateMax: "",
 };
 
 const elements = {
@@ -22,6 +24,8 @@ const elements = {
     qualityFilter: document.querySelector("#quality-filter"),
     dateStartFilter: document.querySelector("#date-start-filter"),
     dateEndFilter: document.querySelector("#date-end-filter"),
+    dateHelperText: document.querySelector("#date-helper-text"),
+    dateErrorText: document.querySelector("#date-error-text"),
     topKFilter: document.querySelector("#top-k-filter"),
     similarityFilter: document.querySelector("#similarity-filter"),
     similarityValue: document.querySelector("#similarity-value"),
@@ -76,6 +80,12 @@ function bindEvents() {
         elements.similarityValue.textContent = Number(elements.similarityFilter.value).toFixed(2);
     });
 
+    [elements.dateStartFilter, elements.dateEndFilter].forEach((input) => {
+        input.addEventListener("change", () => {
+            clearDateError();
+        });
+    });
+
     elements.closeDialogButton.addEventListener("click", () => elements.articleDialog.close());
 }
 
@@ -88,6 +98,9 @@ async function loadMetadata() {
         elements.dateStartFilter.max = metadata.date_max || "";
         elements.dateEndFilter.min = metadata.date_min || "";
         elements.dateEndFilter.max = metadata.date_max || "";
+        state.dateMin = metadata.date_min || "";
+        state.dateMax = metadata.date_max || "";
+        renderDateHelperText(state.dateMin, state.dateMax);
     } catch (error) {
         renderSearchMessage("Não foi possível carregar os filtros disponíveis.", "error-state");
     }
@@ -135,10 +148,17 @@ async function runSearch() {
         return;
     }
 
-    if (!hasValidDateRange()) {
-        renderSearchMessage("A data inicial deve ser anterior ou igual à data final.", "error-state");
+    const dateValidation = validateDateFilters(
+        elements.dateStartFilter.value,
+        elements.dateEndFilter.value,
+        state.dateMin,
+        state.dateMax,
+    );
+    if (!dateValidation.valid) {
+        renderDateError(dateValidation.message);
         return;
     }
+    clearDateError();
 
     const payload = {
         query,
@@ -363,10 +383,67 @@ function formatContentQualityLabel(value) {
     return CONTENT_QUALITY_LABELS[value] || value;
 }
 
-function hasValidDateRange() {
-    const dateStart = elements.dateStartFilter.value;
-    const dateEnd = elements.dateEndFilter.value;
-    return !(dateStart && dateEnd && dateStart > dateEnd);
+function formatDateBR(isoDate) {
+    if (!isoDate) {
+        return "";
+    }
+
+    const [year, month, day] = isoDate.split("-");
+    return `${day}/${month}/${year}`;
+}
+
+function validateDateFilters(dateStart, dateEnd, minDate, maxDate) {
+    const formattedRange = `${formatDateBR(minDate)} e ${formatDateBR(maxDate)}`;
+
+    if (dateStart && minDate && dateStart < minDate) {
+        return {
+            valid: false,
+            message: `A data inicial deve estar entre ${formattedRange}.`,
+        };
+    }
+    if (dateStart && maxDate && dateStart > maxDate) {
+        return {
+            valid: false,
+            message: `A data inicial deve estar entre ${formattedRange}.`,
+        };
+    }
+    if (dateEnd && minDate && dateEnd < minDate) {
+        return {
+            valid: false,
+            message: `A data final deve estar entre ${formattedRange}.`,
+        };
+    }
+    if (dateEnd && maxDate && dateEnd > maxDate) {
+        return {
+            valid: false,
+            message: `A data final deve estar entre ${formattedRange}.`,
+        };
+    }
+    if (dateStart && dateEnd && dateStart > dateEnd) {
+        return {
+            valid: false,
+            message: "A data inicial não pode ser maior que a data final.",
+        };
+    }
+
+    return { valid: true, message: "" };
+}
+
+function renderDateHelperText(minDate, maxDate) {
+    if (!minDate || !maxDate) {
+        elements.dateHelperText.textContent = "";
+        return;
+    }
+
+    elements.dateHelperText.textContent = `Período disponível: ${formatDateBR(minDate)} até ${formatDateBR(maxDate)}`;
+}
+
+function renderDateError(message) {
+    elements.dateErrorText.textContent = message;
+}
+
+function clearDateError() {
+    elements.dateErrorText.textContent = "";
 }
 
 async function fetchJson(url, options = {}) {
