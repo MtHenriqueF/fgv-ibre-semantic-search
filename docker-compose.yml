@@ -1,1 +1,9 @@
-# Docker Compose support will be implemented in a later project stage.
+services:
+  semantic-search:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
