@@ -4,6 +4,13 @@ const DEFAULT_EXAMPLES = [
     "inflação e preços ao consumidor",
 ];
 
+const CONTENT_QUALITY_LABELS = {
+    empty: "Texto vazio",
+    very_short: "Notícia curta",
+    short: "Notícia curta",
+    ok: "Notícia normal",
+};
+
 const state = {
     evaluationLoaded: false,
 };
@@ -76,7 +83,7 @@ async function loadMetadata() {
     try {
         const metadata = await fetchJson("/api/metadata");
         fillSelect(elements.sourceFilter, metadata.fontes);
-        fillSelect(elements.qualityFilter, metadata.content_quality);
+        fillSelect(elements.qualityFilter, metadata.content_quality, formatContentQualityLabel);
         elements.dateStartFilter.min = metadata.date_min || "";
         elements.dateStartFilter.max = metadata.date_max || "";
         elements.dateEndFilter.min = metadata.date_min || "";
@@ -98,11 +105,11 @@ async function loadExamples() {
     }
 }
 
-function fillSelect(select, values) {
+function fillSelect(select, values, formatLabel = (value) => value) {
     values.forEach((value) => {
         const option = document.createElement("option");
         option.value = value;
-        option.textContent = value;
+        option.textContent = formatLabel(value);
         select.append(option);
     });
 }
@@ -125,6 +132,11 @@ function renderExampleChips(examples) {
 async function runSearch() {
     const query = elements.queryInput.value.trim();
     if (!query) {
+        return;
+    }
+
+    if (!hasValidDateRange()) {
+        renderSearchMessage("A data inicial deve ser anterior ou igual à data final.", "error-state");
         return;
     }
 
@@ -345,6 +357,16 @@ function compactObject(object) {
     return Object.fromEntries(
         Object.entries(object).filter(([, value]) => value !== "" && value !== null && value !== undefined),
     );
+}
+
+function formatContentQualityLabel(value) {
+    return CONTENT_QUALITY_LABELS[value] || value;
+}
+
+function hasValidDateRange() {
+    const dateStart = elements.dateStartFilter.value;
+    const dateEnd = elements.dateEndFilter.value;
+    return !(dateStart && dateEnd && dateStart > dateEnd);
 }
 
 async function fetchJson(url, options = {}) {

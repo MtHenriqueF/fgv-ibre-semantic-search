@@ -90,8 +90,8 @@ def search_semantic(
             min_similarity=min_similarity,
         )
 
-    query_embedding = generate_embeddings([query])[0]
     where = build_chroma_where(filters)
+    query_embedding = generate_embeddings([query])[0]
 
     raw_results = collection.query(
         query_embeddings=[query_embedding],

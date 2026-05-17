@@ -18,6 +18,12 @@ def test_build_chroma_where_with_fonte_filter() -> None:
     }
 
 
+def test_build_chroma_where_with_content_quality_filter() -> None:
+    assert build_chroma_where({"content_quality": "very_short"}) == {
+        "content_quality": "very_short"
+    }
+
+
 def test_build_chroma_where_with_date_range_filter() -> None:
     assert build_chroma_where(
         {"date_start": "2023-08-01", "date_end": "2023-08-31"}
@@ -27,6 +33,11 @@ def test_build_chroma_where_with_date_range_filter() -> None:
             {"date_int": {"$lte": 20230831}},
         ]
     }
+
+
+def test_build_chroma_where_rejects_inverted_date_range() -> None:
+    with pytest.raises(ValueError, match="date_start must be less than or equal to date_end"):
+        build_chroma_where({"date_start": "2023-08-31", "date_end": "2023-08-01"})
 
 
 def test_search_semantic_with_valid_query_returns_results(
