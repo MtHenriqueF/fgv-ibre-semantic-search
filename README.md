@@ -77,6 +77,43 @@ O chunking usa `chunk_size=900`, `chunk_overlap=120` e separadores `["\n\n", ". 
 
 A coleção é configurada com distância cosseno e índice HNSW quando suportado pela versão instalada do ChromaDB. O banco vetorial persistente fica em `data/vector_store/chroma_db/` e pode ser reconstruído a partir dos dados processados.
 
+## Comparação de Modelos de Embedding
+
+A escolha do modelo de embedding foi avaliada experimentalmente. Como o corpus é composto por notícias econômicas curtas em português brasileiro, priorizei modelos públicos, pequenos, compatíveis com `sentence-transformers` e capazes de representar textos multilíngues com baixo custo local. Foram comparados:
+
+- `intfloat/multilingual-e5-small`
+- `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+
+Ambos podem ser executados localmente sem token ou API externa. O objetivo não foi treinar um modelo financeiro específico, mas escolher um embedding adequado para busca semântica local em um corpus pequeno.
+
+Para evitar uma comparação enviesada, mantive fixos os dados limpos, os chunks, as três consultas obrigatórias, a métrica cosseno e os julgamentos manuais de relevância. Dessa forma, a principal variável analisada foi o modelo de embedding. O experimento fica isolado do banco vetorial principal da aplicação em `data/vector_store/model_comparison/`.
+
+A avaliação usa qrels, isto é, julgamentos manuais de relevância para cada consulta. A escala adotada é:
+
+- `0`: irrelevante
+- `1`: parcialmente relevante
+- `2`: relevante
+- `3`: altamente relevante
+
+As métricas de ranking `Precision@3`, `Recall@5`, `MRR` e `nDCG@5` verificam se os documentos relevantes aparecem nas primeiras posições do ranking. A comparação preserva os mesmos chunks para isolar o efeito do modelo de embedding; portanto, valores absolutos de similaridade cosseno não são usados para escolher o modelo.
+
+Execute o experimento com:
+
+```bash
+python -m src.embedding_evaluation
+```
+
+O resultado versionado fica em `outputs/embedding_evaluation.csv`, com uma linha por modelo e a média das métricas. Se os modelos empatarem ou ficarem muito próximos, a decisão favorece o modelo já adotado pela aplicação por simplicidade operacional; se o modelo alternativo superar claramente o atual, a troca deve ser feita em outra branch controlada.
+
+Resultado da comparação experimental:
+
+| Modelo | Precision@3 médio | Recall@5 médio | MRR médio | nDCG@5 médio | Média aritmética |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `intfloat/multilingual-e5-small` | 0.666667 | 0.708333 | 1.000000 | 0.873375 | 0.812094 |
+| `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | 0.888889 | 0.708333 | 1.000000 | 0.816795 | 0.853504 |
+
+O `multilingual-e5-small` obteve `nDCG@5` maior, enquanto o `paraphrase-multilingual-MiniLM-L12-v2` teve `Precision@3` maior; `Recall@5` e `MRR` empataram. Considerando a média aritmética das métricas e a simplicidade de manter o modelo já integrado à aplicação, a recomendação desta comparação é preservar `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` como modelo principal.
+
 ## Busca Semântica
 
 O motor de busca semântico está implementado em `src/search.py`. Ele recebe uma consulta em texto livre, gera o embedding da query com o mesmo modelo usado na indexação (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`) e consulta a coleção ChromaDB `fgv_ibre_news_chunks`.
