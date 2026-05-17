@@ -1,52 +1,136 @@
 # FGV IBRE Semantic Search
 
-Projeto para o Desafio Técnico de Estágio em Ciência de Dados do FGV IBRE.
+Mini motor de busca semântica para notícias econômicas brasileiras, com limpeza textual, embeddings via `sentence-transformers`, ChromaDB e avaliação de ranking.
 
-## Contexto
+## Acesso rápido
 
-O desafio propõe a construção de um mini motor de busca semântico aplicado a notícias econômicas fictícias. A solução deve demonstrar um fluxo reproduzível para limpeza textual, geração de embeddings, indexação local, recuperação por similaridade e avaliação dos resultados.
+A aplicação está disponível temporariamente em:
 
-## Objetivo
+```text
+https://fgv-ibre-semantic-search-4nntyuikca-uc.a.run.app/
+```
 
-Construir uma aplicação local e simples de executar para:
+O deploy foi feito no Google Cloud Run. A imagem de deploy executa o pipeline durante o build, portanto a demo online já fica pronta para uso: para testar a interface, o avaliador não precisa baixar modelo, gerar embeddings ou criar o banco ChromaDB localmente.
 
-- limpar notícias econômicas brutas;
-- gerar dados processados e chunks com metadados;
-- criar embeddings com `sentence-transformers`;
-- indexar os vetores em ChromaDB local;
-- comparar busca semântica, léxica e híbrida;
-- avaliar resultados com métricas de ranking;
-- expor uma API FastAPI e uma interface web estática servida pelo próprio backend.
+A demo online é um bônus para facilitar a inspeção visual; a entrega principal continua sendo a solução reproduzível em Python descrita abaixo.
 
-## Arquitetura
+## Formas de execução
 
-A arquitetura está organizada em camadas simples:
+### Demo online
 
-- `src/`: lógica principal do projeto, incluindo limpeza, chunking, embeddings, busca e avaliação;
-- `backend/`: aplicação FastAPI e services que chamam a lógica de `src/`;
-- `frontend/`: HTML, CSS e JavaScript estáticos servidos pelo backend;
-- `data/`: entrada bruta, dados processados e banco vetorial local reconstruível;
-- `evaluation/`: queries e julgamentos de relevância;
-- `outputs/`: relatórios e resultados gerados para inspeção.
+Acesse:
 
-O banco vetorial utilizado é o ChromaDB local. O projeto não terá autenticação, login, billing, SaaS ou dependência de banco remoto.
+```text
+https://fgv-ibre-semantic-search-4nntyuikca-uc.a.run.app/
+```
 
-## Estrutura de Diretórios
+### Execução local com Python
+
+Linux/macOS:
+
+```bash
+git clone https://github.com/MtHenriqueF/fgv-ibre-semantic-search.git
+cd fgv-ibre-semantic-search
+
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+python run_pipeline.py
+uvicorn backend.main:app --reload
+```
+
+Windows:
+
+```powershell
+git clone https://github.com/MtHenriqueF/fgv-ibre-semantic-search.git
+cd fgv-ibre-semantic-search
+
+python -m venv .venv
+.venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+python run_pipeline.py
+uvicorn backend.main:app --reload
+```
+
+Depois, acesse:
+
+```text
+http://127.0.0.1:8000
+```
+
+A documentação automática da API fica disponível em:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Na primeira execução local, o download do modelo de embeddings pode levar alguns minutos. Na demo online, o modelo e o índice já foram preparados no build da imagem.
+
+### Execução com Docker
+
+```bash
+docker compose up --build
+```
+
+Depois, acesse:
+
+```text
+http://localhost:8000
+```
+
+O Docker é opcional. Ele serve para empacotar o ambiente e facilitar a reprodução local; a execução direta com Python continua sendo suportada.
+
+### Uso via CLI
+
+```bash
+python -m src.search "mudanças na taxa de juros"
+python -m src.search "mercado de trabalho e desemprego"
+python -m src.search "inflação e preços ao consumidor"
+python -m src.search "inflação e preços ao consumidor" --top-k 5
+python -m src.search "receita de bolo de chocolate" --min-similarity 0.35
+```
+
+## Escopo da entrega
+
+### Núcleo exigido pelo desafio
+
+O núcleo técnico exigido está em `src/` e cobre:
+
+- limpeza e tratamento textual;
+- geração de `data/processed/noticias_limpas.json`;
+- geração de chunks com metadados;
+- geração de embeddings com `sentence-transformers`;
+- indexação local em ChromaDB;
+- busca semântica por similaridade cosseno;
+- avaliação das queries obrigatórias com métricas de ranking.
+
+### Camadas adicionais
+
+Além do núcleo pedido no desafio, o projeto inclui:
+
+- API FastAPI em `backend/`;
+- frontend web estático em `frontend/`;
+- modo de avaliação na interface;
+- Docker para empacotamento local;
+- deploy temporário no Google Cloud Run.
+
+Essas camadas adicionais facilitam a inspeção e a reprodução, mas não substituem a solução Python solicitada no desafio.
+
+## Estrutura do projeto
 
 ```text
 fgv-ibre-semantic-search/
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── vector_store/
-├── outputs/
-├── src/
-├── backend/
-├── frontend/
-├── evaluation/
-├── tests/
-├── docs/
-├── AGENTS.md
+├── data/          # dados brutos, processados e banco vetorial local reconstruível
+├── evaluation/    # queries obrigatórias e julgamentos manuais de relevância
+├── outputs/       # relatórios e resultados gerados
+├── src/           # núcleo técnico: limpeza, embeddings, ChromaDB, busca e métricas
+├── tests/         # testes automatizados dos componentes principais
+├── backend/       # API FastAPI que expõe a solução
+├── frontend/      # interface web para facilitar a avaliação visual
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -54,145 +138,58 @@ fgv-ibre-semantic-search/
 └── run_pipeline.py
 ```
 
-## Pipeline Vetorial
+## Pipeline principal em Python
 
-A etapa atual prepara os dados limpos para indexação vetorial local:
-
-1. `src/chunking.py` lê `data/processed/noticias_limpas.json`.
-2. Cada notícia é dividida em chunks com `RecursiveCharacterTextSplitter`, preservando metadados do artigo.
-3. O campo `document` é criado como texto natural no formato `{titulo}. {texto_do_chunk}`.
-4. `src/embeddings.py` gera embeddings com `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
-5. `src/vector_store.py` recria a coleção `fgv_ibre_news_chunks` no ChromaDB local.
-
-O JSON completo do chunk não é enviado para embedding. A separação é intencional:
-
-- `id`: identificador único do chunk;
-- `document`: texto puro usado para busca semântica;
-- `embedding`: vetor numérico gerado a partir do `document`;
-- `metadata`: campos estruturados usados para filtros e exibição.
-
-Essa decisão evita que chaves JSON, nomes de campos e valores administrativos contaminem o vetor semântico. O ChromaDB armazena os metadados separadamente, incluindo `article_id`, `chunk_id`, `chunk_index`, `titulo`, `data`, `date_int`, `ano`, `mes`, `fonte` e `content_quality`. O campo `date_int` é derivado de `data` no formato `YYYYMMDD`, permitindo filtros futuros por intervalo de datas, além de filtros por fonte e qualidade.
-
-O chunking usa `chunk_size=900`, `chunk_overlap=120` e separadores `["\n\n", ". ", "! ", "? ", "; ", ", ", ".", "!", "?", " ", ""]`. Como as notícias limpas atuais são curtas, cada notícia tende a gerar um único chunk, mantendo o contexto completo do artigo.
-
-A coleção é configurada com distância cosseno e índice HNSW quando suportado pela versão instalada do ChromaDB. O banco vetorial persistente fica em `data/vector_store/chroma_db/` e pode ser reconstruído a partir dos dados processados.
-
-## Comparação de Modelos de Embedding
-
-A escolha do modelo de embedding foi avaliada experimentalmente. Como o corpus é composto por notícias econômicas curtas em português brasileiro, priorizei modelos públicos, pequenos, compatíveis com `sentence-transformers` e capazes de representar textos multilíngues com baixo custo local. Foram comparados:
-
-- `intfloat/multilingual-e5-small`
-- `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-
-Ambos podem ser executados localmente sem token ou API externa. O objetivo não foi treinar um modelo financeiro específico, mas escolher um embedding adequado para busca semântica local em um corpus pequeno.
-
-Para evitar uma comparação enviesada, mantive fixos os dados limpos, os chunks, as três consultas obrigatórias, a métrica cosseno e os julgamentos manuais de relevância. Dessa forma, a principal variável analisada foi o modelo de embedding. O experimento fica isolado do banco vetorial principal da aplicação em `data/vector_store/model_comparison/`.
-
-A avaliação usa qrels, isto é, julgamentos manuais de relevância para cada consulta. A escala adotada é:
-
-- `0`: irrelevante
-- `1`: parcialmente relevante
-- `2`: relevante
-- `3`: altamente relevante
-
-As métricas de ranking `Precision@3`, `Recall@5`, `MRR` e `nDCG@5` verificam se os documentos relevantes aparecem nas primeiras posições do ranking. A comparação preserva os mesmos chunks para isolar o efeito do modelo de embedding; portanto, valores absolutos de similaridade cosseno não são usados para escolher o modelo.
-
-Execute o experimento com:
-
-```bash
-python -m src.embedding_evaluation
-```
-
-O resultado versionado fica em `outputs/embedding_evaluation.csv`, com uma linha por modelo e a média das métricas. Se os modelos empatarem ou ficarem muito próximos, a decisão favorece o modelo já adotado pela aplicação por simplicidade operacional; se o modelo alternativo superar claramente o atual, a troca deve ser feita em outra branch controlada.
-
-Resultado da comparação experimental:
-
-| Modelo | Precision@3 médio | Recall@5 médio | MRR médio | nDCG@5 médio | Média aritmética |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `intfloat/multilingual-e5-small` | 0.666667 | 0.708333 | 1.000000 | 0.873375 | 0.812094 |
-| `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | 0.888889 | 0.708333 | 1.000000 | 0.816795 | 0.853504 |
-
-O `multilingual-e5-small` obteve `nDCG@5` maior, enquanto o `paraphrase-multilingual-MiniLM-L12-v2` teve `Precision@3` maior; `Recall@5` e `MRR` empataram. Considerando a média aritmética das métricas e a simplicidade de manter o modelo já integrado à aplicação, a recomendação desta comparação é preservar `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` como modelo principal.
-
-## Busca Semântica
-
-O motor de busca semântico está implementado em `src/search.py`. Ele recebe uma consulta em texto livre, gera o embedding da query com o mesmo modelo usado na indexação (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`) e consulta a coleção ChromaDB `fgv_ibre_news_chunks`.
-
-A resposta padronizada contém a query, o tipo de busca, os filtros aplicados e uma lista ranqueada de chunks com metadados, documento recuperado, distância vetorial e similaridade aproximada. Como a coleção usa distância cosseno, a similaridade exibida é calculada como:
+O fluxo reproduzível do projeto é:
 
 ```text
-similarity = 1 - distance
+data/raw/noticias_brutas.json
+        ↓
+limpeza textual
+        ↓
+data/processed/noticias_limpas.json
+        ↓
+chunks com metadados
+        ↓
+embeddings
+        ↓
+ChromaDB local
+        ↓
+busca semântica
+        ↓
+avaliação de ranking
 ```
 
-Distância menor indica maior proximidade vetorial. Similaridade maior indica maior proximidade semântica aproximada. Esses valores explicam a proximidade entre query e chunk; já as métricas de ranking avaliam a qualidade da ordem dos documentos recuperados contra julgamentos manuais de relevância.
-
-Filtros disponíveis nesta etapa:
-
-- `fonte`
-- `date_start`
-- `date_end`
-- `content_quality`
-
-Os filtros de data são convertidos para `date_int` no formato `YYYYMMDD` antes da consulta ao ChromaDB.
-
-## Como Rodar
-
-Instale as dependências e execute o pipeline:
+O comando principal é:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 python run_pipeline.py
 ```
 
-Também é possível executar as etapas separadamente:
+Ele reconstrói os artefatos necessários para a busca a partir do arquivo bruto do desafio. O pipeline gera os textos limpos, os chunks e o índice vetorial local usado pela busca semântica.
 
-```bash
-python -m src.chunking
-python -m src.vector_store
-```
+O ChromaDB armazena documentos, embeddings e metadados separadamente. O texto enviado ao embedding é mantido como linguagem natural, enquanto campos como `article_id`, `data`, `fonte` e `content_quality` ficam em metadados estruturados para filtros e exibição.
 
-Execute a busca semântica por CLI:
+## Avaliação da busca semântica
 
-```bash
-python -m src.search "mudanças na taxa de juros"
-python -m src.search "mudanças na taxa de juros" --top-k 5
-python -m src.search "mudanças na taxa de juros" --fonte "Banco Central do Brasil"
-python -m src.search "mudanças na taxa de juros" --date-start 2023-08-01 --date-end 2023-08-31
-python -m src.search "receita de bolo de chocolate" --min-similarity 0.35
-```
+A avaliação obrigatória usa as três consultas do desafio:
 
-Execute a avaliação das queries obrigatórias:
+- `"mudanças na taxa de juros"`
+- `"mercado de trabalho e desemprego"`
+- `"inflação e preços ao consumidor"`
 
-```bash
-python -m src.evaluate --top-k 5
-```
+As métricas são calculadas apenas para essas consultas, pois elas possuem julgamentos manuais de relevância em `evaluation/relevance_judgments.json`. Para consultas livres digitadas pelo usuário, o sistema exibe distância cosseno e similaridade aproximada, mas não calcula `Precision`, `Recall`, `MRR` ou `nDCG` sem julgamentos manuais associados.
 
-Saídas geradas:
+A similaridade cosseno indica proximidade vetorial entre consulta e documento. Já as métricas de ranking avaliam se os documentos considerados relevantes aparecem nas primeiras posições do resultado.
 
-- `data/processed/chunks.jsonl`
-- `data/vector_store/chroma_db/`
-- `outputs/search_examples.json`
-- `outputs/evaluation_results.csv`
+Métricas usadas:
 
-## Avaliação
-
-A avaliação usa as três queries obrigatórias do desafio em `evaluation/queries_obrigatorias.json` e julgamentos manuais em `evaluation/relevance_judgments.json`. Os julgamentos usam `article_id`, não `chunk_id`, e seguem a escala:
-
-- `0`: irrelevante
-- `1`: parcialmente relevante
-- `2`: relevante
-- `3`: altamente relevante
-
-Quando múltiplos chunks do mesmo artigo aparecem no ranking, a avaliação deduplica por `article_id` antes de calcular as métricas.
-
-Métricas calculadas:
-
-- `Precision@3`: fração dos 3 primeiros documentos que são relevantes.
-- `Recall@5`: fração dos documentos relevantes recuperada nos 5 primeiros resultados.
-- `MRR`: recíproco da posição do primeiro documento relevante.
-- `nDCG@5`: qualidade do ranking nos 5 primeiros resultados usando relevância graduada de 0 a 3.
+| Métrica | Interpretação |
+| --- | --- |
+| `Precision@3` | proporção de documentos relevantes entre os 3 primeiros resultados |
+| `Recall@5` | proporção dos documentos relevantes recuperada nos 5 primeiros resultados |
+| `MRR` | posição do primeiro documento relevante |
+| `nDCG@5` | qualidade da ordenação considerando relevância graduada |
 
 Resultados atuais em `outputs/evaluation_results.csv`:
 
@@ -202,130 +199,77 @@ Resultados atuais em `outputs/evaluation_results.csv`:
 | mercado de trabalho e desemprego | 1.000000 | 0.750000 | 1.000000 | 0.965119 | `[14, 4, 19, 3, 15]` |
 | inflação e preços ao consumidor | 0.666667 | 0.375000 | 1.000000 | 0.512367 | `[9, 11, 15, 1, 20]` |
 
-Exemplos top 5 gerados em `outputs/search_examples.json`:
+Arquivos úteis:
 
-| Query | Top 5 resultados |
-| --- | --- |
-| mudanças na taxa de juros | 1. Copom mantém Selic em 13,75% ao ano pela quarta reunião consecutiva; 2. Selic deve recuar a 9% até o fim de 2024, projetam economistas; 3. Crédito total no Brasil atinge R$ 5,6 trilhões com desaceleração no crescimento; 4. Copom inicia ciclo de corte e reduz Selic para 13,25%; 5. Inadimplência das famílias sobe para 6,3% em julho, aponta BC |
-| mercado de trabalho e desemprego | 1. Desemprego juvenil no Brasil ainda preocupa apesar de melhora geral; 2. Taxa de desemprego cai para 7,9% no segundo trimestre, menor nível desde 2014; 3. Setor de serviços cresce 0,6% em junho e supera expectativas; 4. PIB do Brasil cresce 1,9% no segundo trimestre de 2023; 5. Câmbio: real se fortalece com melhora do ambiente externo e fiscal |
-| inflação e preços ao consumidor | 1. Inflação ao produtor (IPA) desacelera e pressão sobre preços finais diminui; 2. Selic deve recuar a 9% até o fim de 2024, projetam economistas; 3. Câmbio: real se fortalece com melhora do ambiente externo e fiscal; 4. Copom mantém Selic em 13,75% ao ano pela quarta reunião consecutiva; 5. Expectativas para o PIB de 2023 sobem para 2,5% após resultado do segundo trimestre |
+- `evaluation/queries_obrigatorias.json`
+- `evaluation/relevance_judgments.json`
+- `outputs/evaluation_results.csv`
+- `outputs/search_examples.json`
 
-Para consultas fora do domínio econômico, use `--min-similarity` para descartar resultados fracos. Exemplo validado:
+## Escolha do modelo de embedding
 
-```bash
-python -m src.search "receita de bolo de chocolate" --top-k 5 --min-similarity 0.35
-```
+A escolha do modelo de embedding foi tratada como uma decisão experimental, não arbitrária. Como o corpus é formado por notícias econômicas curtas em português brasileiro, priorizei modelos:
 
-Retorno: `results: []`.
+- compatíveis com `sentence-transformers`;
+- multilíngues ou adequados a português;
+- públicos e gratuitos no Hugging Face;
+- leves o suficiente para execução local;
+- adequados à tarefa de busca semântica.
 
-Busca léxica, busca híbrida e reranking não foram implementados nesta branch. O requisito principal do desafio é o motor de busca semântico, então esta etapa prioriza ChromaDB, distância cosseno, filtros por metadados, limiar de similaridade e métricas de ranking. Essas funcionalidades ficam como features opcionais para branches futuras.
+Foram comparados:
 
-## API FastAPI
+- `intfloat/multilingual-e5-small`
+- `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
 
-A camada HTTP está em `backend/` e apenas expõe a lógica já implementada em `src/`. Ela não recalcula embeddings, não duplica a busca vetorial e não reimplementa métricas.
+Ambos foram carregados com a biblioteca `sentence-transformers`. A comparação manteve fixos os dados limpos, os chunks, as queries obrigatórias, a métrica cosseno e os julgamentos manuais de relevância; assim, a principal variável experimental foi o modelo de embedding.
 
-Inicie a API localmente:
+Para avaliar o ranking, foram criados julgamentos manuais de relevância, também chamados de qrels. Cada documento recebeu uma nota por consulta:
 
-```bash
-uvicorn backend.main:app --reload
-```
+- `0`: irrelevante
+- `1`: parcialmente relevante
+- `2`: relevante
+- `3`: altamente relevante
 
-Se o executável global `uvicorn` estiver ligado a outro Python, use a forma equivalente:
+As métricas usadas foram `Precision@3`, `Recall@5`, `MRR` e `nDCG@5`, pois elas verificam se os documentos relevantes aparecem nas primeiras posições do ranking. A escolha do modelo não foi feita por similaridade cosseno absoluta, já que valores de similaridade não são diretamente comparáveis entre modelos diferentes.
 
-```bash
-python -m uvicorn backend.main:app --reload
-```
+Resultados reais da comparação em `outputs/embedding_evaluation.csv`:
 
-Depois acesse:
+| Modelo | Precision@3 médio | Recall@5 médio | MRR médio | nDCG@5 médio | Média aritmética |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `intfloat/multilingual-e5-small` | 0.666667 | 0.708333 | 1.000000 | 0.873375 | 0.812094 |
+| `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | 0.888889 | 0.708333 | 1.000000 | 0.816795 | 0.853504 |
 
-- interface web: `http://127.0.0.1:8000/`
-- documentação interativa: `http://127.0.0.1:8000/docs`
-- health-check: `GET http://127.0.0.1:8000/health`
+O `multilingual-e5-small` obteve `nDCG@5` maior, enquanto o `paraphrase-multilingual-MiniLM-L12-v2` obteve `Precision@3` maior; `Recall@5` e `MRR` empataram. Considerando a média aritmética das métricas e a simplicidade de manter o modelo já integrado ao projeto, o modelo principal preservado foi `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
 
-Endpoints disponíveis:
+## Frontend e backend como camada adicional
+
+O frontend foi criado para facilitar a avaliação visual do motor de busca. Ele usa uma identidade limpa e institucional, inspirada visualmente na comunicação do FGV IBRE, e possui três abas:
+
+- **Busca**: consulta em linguagem natural, filtros e resultados com similaridade;
+- **Avaliação**: métricas das queries obrigatórias;
+- **Metodologia**: explicação resumida do pipeline e dos indicadores.
+
+O backend usa FastAPI apenas como camada de exposição da solução. Ele não duplica a lógica principal do projeto; os endpoints chamam funções implementadas em `src/`.
+
+Endpoints principais:
 
 | Método | Endpoint | Uso |
 | --- | --- | --- |
-| `GET` | `/health` | verificar se a API está no ar |
-| `POST` | `/api/search` | executar busca semântica com filtros |
-| `GET` | `/api/metadata` | obter fontes, intervalo de datas e qualidades disponíveis |
-| `GET` | `/api/documents/{article_id}` | recuperar a notícia limpa completa |
-| `GET` | `/api/evaluation` | obter métricas e resultados das queries obrigatórias |
-| `GET` | `/api/search/examples` | obter exemplos prontos para atalhos do frontend |
+| `POST` | `/api/search` | executar busca semântica |
+| `GET` | `/api/metadata` | listar filtros disponíveis |
+| `GET` | `/api/documents/{article_id}` | recuperar notícia limpa completa |
+| `GET` | `/api/evaluation` | obter métricas e resultados avaliados |
+| `GET` | `/health` | verificar disponibilidade da API |
 
-Exemplo de request para busca:
+## Docker e deploy
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/search \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "mudanças na taxa de juros",
-    "top_k": 5,
-    "min_similarity": 0.35,
-    "filters": {
-      "fonte": "Banco Central do Brasil",
-      "date_start": "2023-08-01",
-      "date_end": "2023-08-31",
-      "content_quality": "ok"
-    }
-  }'
-```
+O Docker é usado para empacotar a aplicação e facilitar reprodução local e deploy, mas não é obrigatório para executar o núcleo em Python.
 
-O endpoint `/api/evaluation` serve o modo de avaliação consumido pelo frontend. Ele lê os artefatos já gerados em `outputs/`, combina os resultados com os julgamentos manuais de relevância e devolve:
+No deploy do Google Cloud Run, o pipeline é executado durante o build da imagem. Assim, quando o avaliador acessa o link público, o site já está pronto para uso com o modelo baixado, os embeddings gerados e o ChromaDB preparado.
 
-- médias das métricas;
-- métricas por query obrigatória;
-- resultados recuperados por query;
-- `article_id`, `chunk_id`, `chunk_index`, distância, similaridade e `relevance_grade`.
+## Limitações e próximos passos
 
-## Frontend Estático
-
-O frontend estático está em `frontend/` e é servido pelo próprio FastAPI quando `frontend/index.html` está presente. A interface consome os endpoints da API via HTTP/JSON, sem duplicar a lógica de busca implementada em `src/`.
-
-A página principal oferece:
-
-- campo de busca em linguagem natural;
-- filtros por fonte, qualidade do conteúdo, intervalo de datas, `top-k` e similaridade mínima;
-- atalhos para as queries obrigatórias do desafio;
-- cards de resultado com opção de abrir a notícia completa;
-- exibição opcional de detalhes técnicos, como distância e similaridade;
-- abas de avaliação e metodologia, com métricas agregadas e resultados por query.
-
-Durante a inicialização, o JavaScript carrega `/api/metadata` para preencher filtros e `/api/search/examples` para montar os atalhos. As buscas usam `/api/search`, o modal de detalhe usa `/api/documents/{article_id}` e a aba de avaliação usa `/api/evaluation`.
-
-## Roadmap Resumido
-
-1. Setup inicial do repositório.
-2. Limpeza dos dados brutos.
-3. Enriquecimento de metadados.
-4. Geração de chunks.
-5. Embeddings e indexação em ChromaDB.
-6. Busca semântica com filtros.
-7. Busca léxica e busca híbrida.
-8. Reranking opcional.
-9. Métricas de avaliação.
-10. Backend FastAPI.
-11. Frontend estático.
-12. Docker como opção de execução.
-13. Documentação final.
-
-## Status Atual
-
-Implementada a preparação, indexação vetorial, busca semântica, API e interface web:
-
-- limpeza textual disponível em `src/cleaning.py`;
-- geração de chunks em `src/chunking.py`;
-- geração de embeddings em `src/embeddings.py`;
-- indexação local em ChromaDB em `src/vector_store.py`;
-- busca semântica com filtros em `src/search.py`;
-- métricas de ranking em `src/evaluate.py`;
-- avaliação salva em `outputs/evaluation_results.csv`;
-- exemplos de busca salvos em `outputs/search_examples.json`;
-- API FastAPI disponível em `backend/`;
-- frontend estático disponível em `frontend/` e servido na raiz `/`.
-
-Ainda não foram implementados nesta branch:
-
-- busca léxica;
-- busca híbrida;
-- reranking.
+- O corpus possui apenas 20 notícias fictícias.
+- Os julgamentos de relevância foram criados manualmente para as queries obrigatórias.
+- O ChromaDB é usado localmente porque o objetivo é demonstrar o pipeline, não operar um sistema de produção.
+- Como evolução, seria possível adicionar busca híbrida com BM25, reranking com CrossEncoder e avaliação com um conjunto maior de queries.
