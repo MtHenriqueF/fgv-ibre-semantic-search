@@ -12,7 +12,7 @@ https://fgv-ibre-semantic-search-4nntyuikca-uc.a.run.app/
 
 O deploy foi feito no Google Cloud Run. A imagem de deploy executa o pipeline durante o build, portanto a demo online já fica pronta para uso: para testar a interface, o avaliador não precisa baixar modelo, gerar embeddings ou criar o banco ChromaDB localmente.
 
-A demo online é um bônus para facilitar a inspeção visual; a entrega principal continua sendo a solução reproduzível em Python descrita abaixo.
+A demo online roda no Google Cloud Run. A primeira busca pode demorar cerca de 40 segundos a 1 minuto caso a aplicação esteja inativa há algum tempo, por causa da inicialização do serviço. O pipeline já foi executado no build, então não é necessário baixar modelos ou gerar embeddings para usar o site. A entrega principal continua sendo a solução reproduzível em Python descrita abaixo.
 
 ## Formas de execução
 
@@ -139,6 +139,15 @@ fgv-ibre-semantic-search/
 ```
 
 ## Pipeline principal em Python
+
+
+### Visão visual do pipeline
+
+A imagem abaixo resume o fluxo principal da solução: os dados brutos são limpos, transformados em chunks com metadados, convertidos em embeddings com `sentence-transformers`, indexados em um ChromaDB local e recuperados por busca semântica com similaridade cosseno. A avaliação utiliza queries obrigatórias e julgamentos manuais de relevância para calcular métricas de ranking.
+
+> **Aviso sobre identidade visual:** o uso de elementos visuais associados ao FGV IBRE nesta imagem tem finalidade exclusivamente ilustrativa e contextual para o desafio técnico. Este projeto não representa um produto oficial da FGV, da FGV IBRE ou de qualquer unidade da instituição.
+
+![Pipeline de busca semântica](docs/assets/pipeline_semantic_search.png)
 
 O fluxo reproduzível do projeto é:
 
