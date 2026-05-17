@@ -6,7 +6,7 @@
     <title>FGV IBRE Semantic Search</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
 </head>
@@ -22,10 +22,9 @@
                 <span class="brand__divider"></span>
                 <div>
                     <h1>Semantic Search</h1>
-                    <p>Mini motor de busca semântico para notícias econômicas brasileiras.</p>
+                    <p>Mini motor de busca semântica para notícias econômicas brasileiras.</p>
                 </div>
             </div>
-            <a class="topbar__docs" href="/docs">API Docs</a>
         </div>
     </header>
 
@@ -61,7 +60,10 @@
                         </div>
                         <button class="button button--primary" type="submit">Buscar</button>
                     </div>
-                    <div class="chip-row" id="example-chips" aria-label="Queries de exemplo"></div>
+                    <div class="example-searches">
+                        <p class="example-searches__label">Buscas mais relevantes:</p>
+                        <div class="chip-row" id="example-chips" aria-label="Buscas mais relevantes"></div>
+                    </div>
                 </form>
 
                 <div class="search-layout">
@@ -122,12 +124,9 @@
             </section>
 
             <section class="tab-panel" id="evaluation-panel" data-tab-panel="evaluation">
-                <header class="section-header section-header--actions">
-                    <div>
-                        <h2>Avaliação da busca semântica</h2>
-                        <p>Precision, Recall, MRR e nDCG só são calculadas para queries com julgamentos manuais de relevância.</p>
-                    </div>
-                    <button class="button button--primary" id="load-evaluation-button" type="button">Carregar avaliação</button>
+                <header class="section-header">
+                    <h2>Avaliação da busca semântica</h2>
+                    <p>As métricas Precision, Recall, MRR e nDCG são calculadas apenas para consultas com julgamentos manuais de relevância.</p>
                 </header>
 
                 <div class="metric-grid" id="metrics-summary"></div>
@@ -135,13 +134,13 @@
                 <section class="panel panel--table">
                     <div class="panel__heading">
                         <span class="material-symbols-outlined">table_chart</span>
-                        <h3>Métricas por query</h3>
+                        <h3>Métricas por consulta</h3>
                     </div>
                     <div class="table-wrap">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Query</th>
+                                    <th>Consulta</th>
                                     <th>Precision@3</th>
                                     <th>Recall@5</th>
                                     <th>MRR</th>
@@ -194,7 +193,7 @@
                     <article class="pipeline-step">
                         <span>4</span>
                         <h3>Busca semântica</h3>
-                        <p>Comparação da query com os chunks indexados usando distância cosseno.</p>
+                        <p>Comparação da consulta com os chunks indexados usando distância cosseno.</p>
                     </article>
                     <article class="pipeline-step">
                         <span>5</span>
@@ -219,11 +218,11 @@
                             <tbody>
                                 <tr>
                                     <td>Distância cosseno</td>
-                                    <td>Mede a distância vetorial entre query e documento.</td>
+                                    <td>Mede a distância vetorial entre consulta e documento.</td>
                                 </tr>
                                 <tr>
                                     <td>Similaridade cosseno</td>
-                                    <td>Aproxima a proximidade semântica entre query e documento.</td>
+                                    <td>Aproxima a proximidade semântica entre consulta e documento.</td>
                                 </tr>
                                 <tr>
                                     <td>Precision@3</td>

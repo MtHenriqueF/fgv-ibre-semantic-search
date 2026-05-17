@@ -23,7 +23,6 @@ const elements = {
     resultsCount: document.querySelector("#results-count"),
     resultsContext: document.querySelector("#results-context"),
     searchResults: document.querySelector("#search-results"),
-    loadEvaluationButton: document.querySelector("#load-evaluation-button"),
     metricsSummary: document.querySelector("#metrics-summary"),
     evaluationTableBody: document.querySelector("#evaluation-table-body"),
     evaluationDetails: document.querySelector("#evaluation-details"),
@@ -70,7 +69,6 @@ function bindEvents() {
         elements.similarityValue.textContent = Number(elements.similarityFilter.value).toFixed(2);
     });
 
-    elements.loadEvaluationButton.addEventListener("click", loadEvaluation);
     elements.closeDialogButton.addEventListener("click", () => elements.articleDialog.close());
 }
 
@@ -233,19 +231,24 @@ async function openDocument(articleId) {
 }
 
 async function loadEvaluation() {
-    elements.loadEvaluationButton.disabled = true;
-    elements.loadEvaluationButton.textContent = "Carregando...";
+    renderEvaluationMessage("Carregando avaliação...", "empty-state");
 
     try {
         const payload = await fetchJson("/api/evaluation");
         renderEvaluation(payload);
         state.evaluationLoaded = true;
     } catch (error) {
-        elements.metricsSummary.innerHTML = `<div class="error-state">${escapeHtml(error.message || "Não foi possível carregar a avaliação.")}</div>`;
-    } finally {
-        elements.loadEvaluationButton.disabled = false;
-        elements.loadEvaluationButton.textContent = "Carregar avaliação";
+        renderEvaluationMessage(
+            error.message || "Não foi possível carregar a avaliação. Tente novamente em alguns instantes.",
+            "error-state",
+        );
     }
+}
+
+function renderEvaluationMessage(message, className) {
+    elements.metricsSummary.innerHTML = `<div class="${className}">${escapeHtml(message)}</div>`;
+    elements.evaluationTableBody.innerHTML = "";
+    elements.evaluationDetails.innerHTML = "";
 }
 
 function renderEvaluation(payload) {
