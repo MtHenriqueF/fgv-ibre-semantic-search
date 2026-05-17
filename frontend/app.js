@@ -392,31 +392,19 @@ function formatDateBR(isoDate) {
     return `${day}/${month}/${year}`;
 }
 
-function validateDateFilters(dateStart, dateEnd, minDate, maxDate) {
-    const formattedRange = `${formatDateBR(minDate)} e ${formatDateBR(maxDate)}`;
+function isDateInRange(dateIso, minIso, maxIso) {
+    if (!dateIso) {
+        return true;
+    }
 
-    if (dateStart && minDate && dateStart < minDate) {
+    return (!minIso || dateIso >= minIso) && (!maxIso || dateIso <= maxIso);
+}
+
+function validateDateFilters(dateStart, dateEnd, minDate, maxDate) {
+    if (!isDateInRange(dateStart, minDate, maxDate) || !isDateInRange(dateEnd, minDate, maxDate)) {
         return {
             valid: false,
-            message: `A data inicial deve estar entre ${formattedRange}.`,
-        };
-    }
-    if (dateStart && maxDate && dateStart > maxDate) {
-        return {
-            valid: false,
-            message: `A data inicial deve estar entre ${formattedRange}.`,
-        };
-    }
-    if (dateEnd && minDate && dateEnd < minDate) {
-        return {
-            valid: false,
-            message: `A data final deve estar entre ${formattedRange}.`,
-        };
-    }
-    if (dateEnd && maxDate && dateEnd > maxDate) {
-        return {
-            valid: false,
-            message: `A data final deve estar entre ${formattedRange}.`,
+            message: `Selecione uma data dentro do período disponível: ${formatDateBR(minDate)} até ${formatDateBR(maxDate)}.`,
         };
     }
     if (dateStart && dateEnd && dateStart > dateEnd) {

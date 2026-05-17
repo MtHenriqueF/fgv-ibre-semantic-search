@@ -51,7 +51,7 @@
                     <p>Digite uma consulta em linguagem natural para encontrar notícias economicamente relacionadas por similaridade semântica.</p>
                 </header>
 
-                <form class="search-box" id="search-form">
+                <form class="search-box" id="search-form" novalidate>
                     <label class="field-label" for="query-input">Consulta</label>
                     <div class="search-box__row">
                         <div class="input-with-icon">
@@ -86,11 +86,11 @@
                         <div class="field-grid">
                             <div>
                                 <label class="field-label" for="date-start-filter">Data inicial</label>
-                                <input id="date-start-filter" type="date">
+                                <input id="date-start-filter" type="date" placeholder="dd/mm/aaaa">
                             </div>
                             <div>
                                 <label class="field-label" for="date-end-filter">Data final</label>
-                                <input id="date-end-filter" type="date">
+                                <input id="date-end-filter" type="date" placeholder="dd/mm/aaaa">
                             </div>
                         </div>
                         <div class="date-feedback">
