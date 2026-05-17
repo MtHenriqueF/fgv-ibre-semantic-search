@@ -1,0 +1,41 @@
+.venv
+venv
+env
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+.git
+.DS_Store
+.vscode
+.idea
+
+# não copie o banco vetorial da sua máquina
+# ele será reconstruído no build
+data/vector_store/chroma_db
+
+# outputs locais serão regenerados no build
+outputs
+
+.env
+.env.*
+
+.ipynb_checkpoints
+
+.codex
+.cursor
+.continue
+.windsurf
+.aider*
+.agent
+.agents
+.skills
+skills
+agent_workspace
+agent_artifacts
+conversation_history
+scratchpad
+*.agent.md
+*.scratch.md

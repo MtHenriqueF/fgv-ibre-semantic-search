@@ -1,13 +1,9 @@
 beautifulsoup4
-pandas
-numpy
 sentence-transformers
 chromadb
 langchain-text-splitters
-rank-bm25
 fastapi
 uvicorn
 pydantic
 httpx
-scikit-learn
 pytest
